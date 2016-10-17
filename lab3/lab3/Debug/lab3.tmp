@@ -1,0 +1,38 @@
+<ASSEMBLER_INFO>
+ <VERSION>2.2.6</VERSION>
+ <DEVICE>"ATxmega128A1U"</DEVICE>
+ <WORKING_DIR>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\lab3\lab3\Debug</WORKING_DIR>
+ <INCLUDE_PATH>
+  <DIR>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.0.39\avrasm\inc</DIR>
+  <DIR>C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avrassembler\Include</DIR>
+  <DIR></DIR>
+ </INCLUDE_PATH>
+ <SOURCE_FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\lab3\lab3\main.asm</SOURCE_FILE>
+ <INCLUDED_FILES>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.0.39\avrasm\inc\ATxmega128a1udef.inc</FILE>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.0.39\avrasm\inc\ATxmega128A1Udef.inc</FILE>
+ </INCLUDED_FILES>
+ <OBJECT_FILES>
+  <FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\lab3\lab3\Debug\lab3.obj</FILE>
+ </OBJECT_FILES>
+ <HEX_FILES>
+  <FILE>lab3.hex</FILE>
+ </HEX_FILES>
+ <OUTPUT_FILES>
+  <FILE>lab3.map</FILE>
+  <FILE>lab3.lss</FILE>
+ </OUTPUT_FILES>
+ <LABELS>
+  <MAIN><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\lab3\lab3\main.asm</FILE><LINE>23</LINE></MAIN>
+  <LOOP><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\lab3\lab3\main.asm</FILE><LINE>65</LINE></LOOP>
+  <ROTATE_RIGHT><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\lab3\lab3\main.asm</FILE><LINE>84</LINE></ROTATE_RIGHT>
+  <ROTATE_LEFT><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\lab3\lab3\main.asm</FILE><LINE>71</LINE></ROTATE_LEFT>
+  <NO_CARRY><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\lab3\lab3\main.asm</FILE><LINE>79</LINE></NO_CARRY>
+  <DELAY_X0ms><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\lab3\lab3\main.asm</FILE><LINE>129</LINE></DELAY_X0ms>
+  <ADD_BIT7><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\lab3\lab3\main.asm</FILE><LINE>96</LINE></ADD_BIT7>
+  <RETURN_ADD_BIT7><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\lab3\lab3\main.asm</FILE><LINE>92</LINE></RETURN_ADD_BIT7>
+  <DELAY_10ms><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\lab3\lab3\main.asm</FILE><LINE>110</LINE></DELAY_10ms>
+  <DELAY_10ms_LOOP><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\lab3\lab3\main.asm</FILE><LINE>117</LINE></DELAY_10ms_LOOP>
+  <DELAY_X0ms_LOOP><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\lab3\lab3\main.asm</FILE><LINE>132</LINE></DELAY_X0ms_LOOP>
+ </LABELS>
+</ASSEMBLER_INFO>
