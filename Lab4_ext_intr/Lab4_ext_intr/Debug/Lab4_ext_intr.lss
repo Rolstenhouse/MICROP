@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.6  C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm Mon Oct 17 15:56:43 2016
+AVRASM ver. 2.2.6  C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm Mon Oct 17 20:11:42 2016
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.0.39\avrasm\inc\ATxmega128a1udef.inc'
 C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm(13): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.0.39\avrasm\inc\ATxmega128A1Udef.inc'
@@ -6708,14 +6708,14 @@ C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\mai
                                  
                                  
                                  
-                                 * Lab 4 Part D
+                                 * Lab 4 Part A
                                  * Name:			Robert Olsthoorn
                                  * Section #:	8705
                                  * TA Name:		Daniel
-                                 * Description:	Using portE, this program sends the character 'U' to the specified port so that the baud rate can
-                                 				be verified using the DAD board
+                                 * Description:	Program registers PIN0 on portE as a trigger to watch for interrupts and when falling edge is detected
+                                 *				it increments a counter by 1 and sets it as on the LED port declared by the EBI
                                  
-                                 * Lab4_serial.asm
+                                 * Lab4_ext_intr.asm
                                  */
                                  
                                  .list	;Begin including in .lss file
@@ -6812,7 +6812,12 @@ C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\mai
 00010c f7e9                      	brne DELAY_X0ms_LOOP	; If not equal to 0, break out of value
                                  	
 00010d 912f                      	pop r18				; return r18 to original value
-00010e 9508                       
+00010e 9508                      
+                                 .org PORTE_INT0_vect
+000056 c1e0                      	rjmp ISR_LED_COUNT
+                                 
+                                 .def counter = r17
+                                 
                                  .org 0x0000
 000000 c1ff                      rjmp MAIN
                                  
@@ -6822,123 +6827,64 @@ C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\mai
 000201 bfed
 000202 e3ff
 000203 bffe                      	SET_STACK
-000204 d00d                      	rcall USART_INIT
-000205 e515                      	ldi r17, 0x55
+000204 e107
+000205 9300 06e1
+000207 e003
+000208 9300 06e5
+00020a ef0f
+00020b 9300 0701
+00020d ef0f
+00020e 9300 0721
+000210 e001
+000211 9300 0440
+000213 e0f4
+000214 e5e2
+000215 e800
+000216 9301
+000217 e208
+000218 8300
+000219 e105
+00021a 9300 0450
+00021c e208
+00021d 9300 0039
+00021f e8b0
+000220 e0a0                      	SET_EBI		;Using X as the pointer to the LEDs ;Also sets LEDs as outputs
+                                 
+000221 e000                      	ldi r16, 0x00	;Clear existing bits
+000222 930c                      	st X, r16
+                                 
+000223 e010                      	ldi counter, 0
+000224 d001                      	rcall INIT_EXT_INTR	
+                                 
                                  DONE:
-000206 d027                      	rcall OUT_CHAR
-000207 d001                      	rcall DELAY_1000us
-000208 cffd                      	rjmp DONE;
+000225 cfff                      	rjmp DONE;
                                  
-                                 DELAY_1000us:
-000209 93ef                      	push ZL		; temporarily store on the stack
-00020a 93ff                      	push ZH		; temporarily store on the stack
+                                 INIT_EXT_INTR:
+000226 930f                      	push r16
                                  
-00020b efe3                      	ldi ZL, 0xF3	; store low to get approximately 1ms
-00020c e0f1                      	ldi ZH, 0x1		; store high to get approximately 1ms
+000227 e001                      	ldi r16, 0x01		;Setting value as a low-level interrupt
+000228 9300 0689                 	sts PORTE_INTCTRL, r16
                                  
-                                 DELAY_1000us_LOOP:
-00020d 9731                      	sbiw ZH:ZL, 1	; Subtract immediate with carry, will properly subtract 1
-00020e f7f1                      	brne DELAY_1000us_LOOP	; Loop
+00022a 9300 068a                 	sts PORTE_INT0MASK, r16 ;Setting pin0 for interrupt
                                  
-00020f 91ff                      	pop ZH			;return ZH to original
-000210 91ef                      	pop ZL			; retunr ZL to original
-000211 9508                      	ret				; return to rcall location
-                                 	
+00022c 9300 0682                 	sts PORTE_DIRCLR, r16	;Setting pin0 as default to go for input pin
+00022e e002                      	ldi r16, 0b00000010		; 00000 | 010 ;Setting 010 for sensing falling edge
+00022f 9300 0690                 	sts PORTE_PIN0CTRL, r16
+000231 e001                      	ldi r16, 0x01
+000232 9300 00a2                 	sts PMIC_CTRL, r16	;Seting PMIC as a low-level interrupt level
                                  
-                                 /*
-                                 DESCRIPTION: Initialiazes the user transmission protocol information and correctly sets all port directions
-                                 IN: NOTHING
-                                 OUT: NOTHING
-                                 OVERWRITES: PORTD_DIRSET, PORTQ_DIRSET, USARTD0_CTRLB, USARTD0_CTRLC, USARTD0_BAUDCTRLA, USARTD0_BAUDCTRLB
-                                 */
-                                 USART_INIT:
-000212 930f                      	push r16
-000213 e008                      	ldi r16, 0x08		;Setting bit 3 for TX as output
-000214 9300 0681                 	sts PORTE_DIRSET, r16
-000216 9300 0685                 	sts PORTE_OUTSET, r16	;Defaulting Tx output value to be one
-000218 e004                      	ldi r16, 0x04		;Setting bit 2 as RX for input
-000219 9300 0682                 	sts PORTE_DIRCLR, r16
+000234 910f                      	pop r16
+000235 9478                      	sei		;Setting the global interrupt flag
                                  
-                                 	;Initializing portQ bits as outputs (with appropriate values)
-00021b e00a                      	ldi r16, 0x0A	;Setting bits 3 and 1 as output
-00021c 9300 07c1                 	sts PORTQ_DIRSET, r16	;Declaring direction as output ;USB_SW_EN
-00021e 9300 07c6                 	sts PORTQ_OUTCLR, r16	;Setting default values on outputs to be lows	;USB_SW_SEL 
+000236 9508                      	ret;
                                  
-000220 e108                      	ldi r16, 0x18
-000221 9300 0aa4                 	sts USARTE0_CTRLB, r16 ;Enabling Receiver Enable and transmitter enable
+                                 ISR_LED_COUNT:
+000237 940e 0100                 	call DELAY_10ms
+000239 940e 0100                 	call DELAY_10ms
+00023b 940e 0100                 	call DELAY_10ms
+00023d 9513                      	inc counter
+00023e 931c                      	st X, counter
                                  
-                                 	;Writing the equivalent calcluations for baud rate
-                                 	;	BSEL = 0x121	; 289 in hex
-                                 	;	BSCALE = 0b1001 ;-7 since 2's complement
-                                 	
-                                 	;Lower 8 bits of BSEL
-000223 e201                      	ldi r16, 0x21
-000224 9300 0aa6                 	sts USARTE0_BAUDCTRLA, r16
-                                 
-                                 	;BSCALE first 4 bits, BSEL lower 4 bits
-000226 e901                      	ldi r16, 0x91
-000227 9300 0aa7                 	sts USARTE0_BAUDCTRLB, r16
-                                 		
-                                 	;Setting the USART for asynchonous mode
-000229 e203                      	ldi r16, 0b00100011	; 00 (asynchronous) | 10 (even parity) | 0 (stop bit) | 011 (8 bit data size)
-00022a 9300 0aa5                 	sts USARTE0_CTRLC, r16
-                                 
-00022c 910f                      	pop r16
-00022d 9508                      	ret
-                                 
-                                 /*
-                                 DESCRIPTION: Polls the USART's status to see if the transmission has been completed, and then transmits its own message
-                                 IN: r17
-                                 OUT: Loads USARTD0_DATA with r17
-                                 OVERWRITES: NOTHING
-                                 */
-                                 OUT_CHAR:
-00022e 930f                      	push r16
-                                 OUT_CHAR_LOOP:
-                                 
-00022f 9100 0aa1                 	lds r16, USARTE0_STATUS
-000231 ff05                      	sbrs r16, 5	;5 is set if ready to receive transmission information on the buffer
-000232 cffc                      	rjmp OUT_CHAR_LOOP
-                                 		
-000233 9310 0aa0                 	sts USARTE0_DATA, r17
-                                 
-000235 910f                      	pop r16
-000236 9508                      	ret
-                                 
-                                 
-                                 /*
-                                 DESCRIPTION: Transmits a string stored in memory terminated by a null character using the OUT_CHAR subroutine
-                                 IN: Z
-                                 OUT: NOTHING
-                                 OVERWRITES: Z pointer as it increments
-                                 */
-                                 OUT_STRING:
-000237 931f                      	push r17
-                                 OUT_STRING_LOOP:
-000238 9115                      	lpm r17, Z+
-000239 3010                      	cpi r17, 0x00	;Compare with the null terminated value
-00023a f011                      	breq END_STRING
-00023b dff2                      	rcall OUT_CHAR	;Passing in r17 to the out character fucntion
-00023c cffb                      	rjmp OUT_STRING_LOOP
-                                 END_STRING:
-00023d 911f                      	pop r17
-00023e 9508                      	ret
-                                 
-                                 
-                                 /*
-                                 DESCRIPTION: Polls the USART's status to see if the receive has been completed
-                                 IN: NONE
-                                 OUT: r17 with DATA
-                                 OVERWRITES: r17 (data passed)
-                                 */
-                                 IN_CHAR:
-00023f 930f                      	push r16
-                                 IN_CHAR_LOOP:
-000240 9100 09a1                 	lds r16, USARTD0_STATUS
-000242 ff07                      	sbrs r16, 7;7 is set when the receiver has received some information
-000243 cffc                      	rjmp IN_CHAR_LOOP
-000244 9110 09a0                 	lds r17, USARTD0_DATA	;Store the value that was received into the buffer
-000246 910f                      	pop r16
 
 
 RESOURCE USE INFORMATION
@@ -6956,41 +6902,41 @@ counted separately from r26..r31 here.
 .dseg memory usage only counts static data declared with .byte
 
 "ATxmega128A1U" register use summary:
-x  :   0 y  :   0 z  :   1 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
+x  :   2 y  :   0 z  :   2 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:  26 r17:   7 r18:   3 r19:   0 r20:   0 
-r21:   0 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
-r29:   0 r30:  10 r31:  10 
-Registers used: 6 out of 35 (17.1%)
+r13:   0 r14:   0 r15:   0 r16:  30 r17:   3 r18:   3 r19:   0 r20:   0 
+r21:   0 r22:   0 r23:   0 r24:   0 r25:   0 r26:   1 r27:   1 r28:   0 
+r29:   0 r30:   7 r31:   7 
+Registers used: 9 out of 35 (25.7%)
 
 "ATxmega128A1U" instruction use summary:
 .lds  :   0 .sts  :   0 adc   :   0 add   :   0 adiw  :   0 and   :   0 
 andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
-brcc  :   0 brcs  :   0 break :   0 breq  :   1 brge  :   0 brhc  :   0 
+brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   0 brhc  :   0 
 brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
-brne  :   3 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
-brvs  :   0 bset  :   0 bst   :   0 call  :   0 cbi   :   0 cbr   :   0 
+brne  :   2 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
+brvs  :   0 bset  :   0 bst   :   0 call  :   3 cbi   :   0 cbr   :   0 
 clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   0 cls   :   0 
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 
-cpi   :   1 cpse  :   0 dec   :   0 des   :   0 eicall:   0 eijmp :   0 
+cpi   :   0 cpse  :   0 dec   :   0 des   :   0 eicall:   0 eijmp :   0 
 elpm  :   0 eor   :   0 fmul  :   0 fmuls :   0 fmulsu:   0 icall :   0 
-ijmp  :   0 in    :   0 inc   :   0 jmp   :   0 lac   :   0 las   :   0 
-lat   :   0 ld    :   0 ldd   :   0 ldi   :  14 lds   :   3 lpm   :   1 
+ijmp  :   0 in    :   0 inc   :   1 jmp   :   0 lac   :   0 las   :   0 
+lat   :   0 ld    :   0 ldd   :   0 ldi   :  22 lds   :   0 lpm   :   0 
 lsl   :   0 lsr   :   0 mov   :   0 movw  :   0 mul   :   0 muls  :   0 
 mulsu :   0 neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :   2 
-pop   :   9 push  :   9 rcall :   5 ret   :   7 reti  :   0 rjmp  :   5 
+pop   :   4 push  :   4 rcall :   2 ret   :   3 reti  :   1 rjmp  :   3 
 rol   :   0 ror   :   0 sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   0 
-sbis  :   0 sbiw  :   2 sbr   :   0 sbrc  :   0 sbrs  :   2 sec   :   0 
-seh   :   0 sei   :   0 sen   :   0 ser   :   0 ses   :   0 set   :   0 
-sev   :   0 sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 
-sts   :  10 sub   :   0 subi  :   1 swap  :   0 tst   :   0 wdr   :   0 
+sbis  :   0 sbiw  :   1 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 
+seh   :   0 sei   :   1 sen   :   0 ser   :   0 ses   :   0 set   :   0 
+sev   :   0 sez   :   0 sleep :   0 spm   :   0 st    :   4 std   :   0 
+sts   :  12 sub   :   0 subi  :   1 swap  :   0 tst   :   0 wdr   :   0 
 xch   :   0 
 Instructions used: 16 out of 121 (13.2%)
 
 "ATxmega128A1U" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000490    176      0    176  139264   0.1%
+[.cseg] 0x000000 0x000480    162      0    162  139264   0.1%
 [.dseg] 0x002000 0x002000      0      0      0    8192   0.0%
 [.eseg] 0x000000 0x000000      0      0      0    2048   0.0%
 

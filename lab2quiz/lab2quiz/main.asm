@@ -1,244 +1,173 @@
 /*
-* Lab 2 Part C
+* Lab 4 Part F
 * Name:			Robert Olsthoorn
 * Section #:	8705
 * TA Name:		Daniel
-* Description:	This program registers input from a keypad and outputs that data in hex format to memory address r17
+* Description:	Program listens toggles an LED and triggers an interrupt if the USART internal receive interrupt is thrown when trying to receive.
+				If this interrupt is thrown, it reads in the inputted character and puts it back out to the console.
+
+* Lab4_serial_int.asm
 */
 
 .nolist ;Don't include in resulting lss file
 .include "ATxmega128A1Udef.inc"	;Optional 
 .list	;Begin including in .lss file
 
-.ORG 0x0000					;Code starts running from address 0x0000.
-	rjmp MAIN				;Relative jump to start of program.
+.include "init.asm"
+ 
+ .equ CR = 0x0D
+ .equ LF = 0x0A
+ .equ ESC = 0x1B
+ .equ END = 0x00
 
-.ORG 0x0100					;Write to program memory at address 0x200
-							 
+.org 0x0000
+rjmp MAIN
+
+.org USARTD0_RXC_vect
+	rjmp ISR_ECHO_CHAR
+
+.org 0x0400
 MAIN:
-	ldi R16, 0xFF			;Prepare to set all pins
-	sts PORTE_DIRSET, R16	;Set PortE as output pins
+	SET_STACK
+	SET_EBI
+	rcall USART_INIT
+	rcall INIT_EXT_INTR
 
-	rcall KEYPAD_INIT		;Initialize the keypad
-	;rjmp KEYPAD_LOOP		;Run the keyboard loop
+	ldi r16, 0x00
+	st X, r16
 
-;Function: Infinite loop to scan for information and print out Hex Value to LED
-;Edits: Nothing
-;Takes: r17
-	ldi r22, 0x0
-RESET_PASSWORD:
-	ldi r19, 0x3
-	ldi r20, 0x0
-
-SET_PASSWORD:
-	nop
-	nop
-
-	rcall KEYPAD_READ
-	cpi r17, 0xFF
-	breq SET_PASSWORD
-	cp r17, r19
-	brne SET_PASSWORD
-	
-	cpi r20, 0x0
-	breq SET7
-	cpi r20, 0x1 
-	breq SET4
-	cpi r20, 0x2
-	breq SET4
-	cpi r20, 0x3
-	breq SET_POUND
-	cpi r20, 0x4
-	breq SET_LOCK
-
-SET7: 
-	inc r20
-	ldi r19, 0x7
-	rjmp SET_PASSWORD
-
-SET4:
-	inc r20
-	ldi r19, 0x4
-	rjmp SET_PASSWORD
-
-SET_POUND:
-	inc r20
-	ldi r19, 0xF
-	rjmp SET_PASSWORD
-
-SET_LOCK:
-	cpi r22, 0x00
-	brne UNLOCK
-	ldi r16, 0x01
-	sts PORTE_OUT, r16
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	ldi r16, 0x81
-	sts PORTE_OUT, r16
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	rcall DELAY
-	ldi r22, 0xFF
-	rjmp RESET_PASSWORD
-
-UNLOCK:
-	ldi r23, 0x00
-	sts PORTE_OUT, r23
-
-DONE:
-	rjmp DONE
-
-DELAY:
-	push ZL
-	push ZH			
-
-	ldi ZH, 0xC3
-	ldi ZL, 0xCC	
-
-DELAY_LOOP:
-	sbiw ZH:ZL, 0x1	
-	brne DELAY_LOOP
-
-	pop ZH
-	pop ZL			
-	ret			
-
-
-KEYPAD_LOOP:
-	rcall KEYPAD_READ;		;Calling operation
-	rjmp KEYPAD_LOOP		;Infinite loop
-
-;Function: Initialize the ports required for proper keypad reading
-;Edits: PORTF_DIRSET, PORTF_DIRCLR, PORTF_PINCTRL(4-7)
-;Takes: Nothing	
-KEYPAD_INIT:
-	push r16
+	ldi r18, 50		;Initialize r18 as 50 for the delay routine
 	ldi r16, 0x0F
-	sts PORTF_DIRSET, r16	;Setting pins 0 1 2 3 as output pins
-	ldi r16, 0xF0
-	sts PORTF_DIRCLR, r16	;Setting pins 4 5 6 7 as input pins
-	ldi r16, 0b00011000
-	sts PORTF_PIN4CTRL, r16	;Setting pins 4 5 6 7 as PINUP
-	sts PORTF_PIN5CTRL, r16
-	sts PORTF_PIN6CTRL, r16
-	sts PORTF_PIN7CTRL, r16
-	pop r16					;restoring stack
+	rjmp LED_TGL
+
+/*
+DESCRIPTION: Initialiazes the user transmission protocol information and correctly sets all port directions
+IN: r18, r16
+OUT: NOTHING
+OVERWRITES: r16 and r17
+*/
+LED_TGL:
+	call DELAY_X0ms
+	ldi r17, 0xFF
+	eor r16, r17
+	st X, r16
+	rjmp LED_TGL
+
+INIT_EXT_INTR:
+	push r16
+
+	ldi r16, 0x01
+	sts PMIC_CTRL, r16	;Seting PMIC as a low-level interrupt level
+
+	pop r16
+	sei		;Setting the global interrupt flag
+
+	ret;
+
+ISR_ECHO_CHAR:
+	push r16
+	push r17
+	rcall IN_CHAR
+	rcall OUT_CHAR
+	pop r17
+	pop r16
+
+	reti
+/*
+DESCRIPTION: Initialiazes the user transmission protocol information and correctly sets all port directions
+IN: NOTHING
+OUT: NOTHING
+OVERWRITES: PORTD_DIRSET, PORTQ_DIRSET, USARTD0_CTRLB, USARTD0_CTRLC, USARTD0_BAUDCTRLA, USARTD0_BAUDCTRLB
+*/
+USART_INIT:
+	push r16
+	ldi r16, 0x08		;Setting bit 3 for TX as output
+	sts PORTD_DIRSET, r16
+	sts PORTD_OUTSET, r16	;Defaulting Tx output balue to be one
+	ldi r16, 0x04		;Setting bit 2 as RX for input
+	sts PORTD_DIRCLR, r16
+
+	;Initializing portQ bits as outputs (with appropriate values)
+	ldi r16, 0x0A	;Setting bits 3 and 1 as output
+	sts PORTQ_DIRSET, r16	;Declaring direction as output ;USB_SW_EN
+	sts PORTQ_OUTCLR, r16	;Setting default values on outputs to be lows	;USB_SW_SEL 
+
+	ldi r16, 0x18
+	sts USARTD0_CTRLB, r16 ;Enabling Receiver Enable and transmitter enable
+
+	;Writing the equivalent calcluations for baud rate
+	;	BSEL = 0x121	; 289 in hex
+	;	BSCALE = 0b1001 ;-7 since 2's complement
+	
+	;Lower 8 bits of BSEL
+	ldi r16, 0x21
+	sts USARTD0_BAUDCTRLA, r16
+
+	;BSCALE first 4 bits, BSEL lower 4 bits
+	ldi r16, 0x91
+	sts USARTD0_BAUDCTRLB, r16
+		
+	;Setting the USART for asynchonous mode
+	ldi r16, 0b00100011	; 00 (asynchronous) | 10 (even parity) | 0 (stop bit) | 011 (8 bit data size)
+	sts USARTD0_CTRLC, r16
+
+	ldi r16, 0b00010000 ; 00 (reserved) | (receive complete interrupt level) | 0000 (Unimportant)
+	sts USARTD0_CTRLA, r16
+
+	pop r16
 	ret
 
-;Function: Initialize the ports required for proper keypad reading
-;Edits: r17 to store information on the hex value
-;Takes: Nothing	(All following subroutines are helpers to KEYPAD_READ)	
-KEYPAD_READ:
+/*
+DESCRIPTION: Polls the USART's status to see if the transmission has been completed, and then transmits its own message
+IN: r17
+OUT: Loads USARTD0_DATA with r17
+OVERWRITES: NOTHING
+*/
+OUT_CHAR:
+	push r16
+OUT_CHAR_LOOP:
 
-;Takes PORTF_IN
-COL1:				; for 1 4 7 *
-	ldi r17, 0xFF				;set r17 and 0xFF as the error variable
-	ldi r16, 0b00001110			
-	sts PORTF_OUT, r16			;set col1 as low
-	nop
-	nop
-	lds r18, PORTF_IN			;read in values from input
-	rjmp READ1
-	
-;Takes PORTF_IN
-COL2:				; for 2 5 8 0 
-	ldi r16, 0b00001101			
-	sts PORTF_OUT, r16			;set col2 as low
-	nop
-	nop
-	lds r18, PORTF_IN			;read in values from input
-	rjmp READ2
+	lds r16, USARTD0_STATUS
+	sbrs r16, 5	;5 is set if ready to receive transmission information on the buffer
+	rjmp OUT_CHAR_LOOP
+		
+	sts USARTD0_DATA, r17
 
-;Takes PORTF_IN
-COL3:				; for 3 6 9 #
-	ldi r16, 0b00001011			
-	sts PORTF_OUT, r16			;set col3 as low
-	nop
-	nop
-	lds r18, PORTF_IN			;read in values from input
-	rjmp READ3
-	
-;Takes PORTF_IN
-COL4:				; for A B C D
-	ldi r16, 0b00000111			
-	sts PORTF_OUT, r16			;set col4 as low
-	nop
-	nop
-	lds r18, PORTF_IN			;read in values from the output
-	rjmp READ4
-	
-;Takes r18 from COL1
-;Edits r17
-READ1:
-	sbrs r18, 7				; check if inputbit 7 is set, skip next instruction otherwise
-	ldi r17, 0xE	;E
-	sbrs r18, 6				; check if inputbit 6 is set, skip next instruction otherwise
-	ldi r17, 0x7	;7	
-	sbrs r18, 5				; check if inputbit 5 is set, skip next instruction otherwise
-	ldi r17, 0x4	;4
-	sbrs r18, 4				; check if inputbit 4 is set, skip next instruction otherwise
-	ldi r17, 0x1	;1
-	cpi r17, 0xFF	; See if r17 was overwritten
-	brne END_READ
-	rjmp COL2
-	
-;Takes r18 from COL2
-;Edits r17
-READ2:
-	sbrs r18, 7				; check if inputbit is set, skip otherwise
-	ldi r17, 0x0	;0
-	sbrs r18, 6				; check if inputbit is set, skip otherwise
-	ldi r17, 0x8	;8
-	sbrs r18, 5				; check if inputbit is set, skip otherwise
-	ldi r17, 0x5	;5
-	sbrs r18, 4				; check if inputbit is set, skip otherwise
-	ldi r17, 0x2	;2
-	cpi r17, 0xFF		;Compare to see if overwritten
-	brne END_READ
-	rjmp COL3
-	
-;Takes r18 from COL3
-;Edits r17
-READ3:
-	sbrs r18, 7				; check if inputbit is set, skip otherwise
-	ldi r17, 0xF	;#		
-	sbrs r18, 6				; check if inputbit is set, skip otherwise
-	ldi r17, 0x9	;9
-	sbrs r18, 5				; check if inputbit is set, skip otherwise
-	ldi r17, 0x6	;6
-	sbrs r18, 4				; check if inputbit is set, skip otherwise
-	ldi r17, 0x3	;3
-	cpi r17, 0xFF       ;Compare to see if overwritten
-	brne END_READ
-	rjmp COL4		
-	
-;Takes r18 from COL4
-;Edits r17
-READ4:
-	sbrs r18, 7				; check if inputbit is set, skip otherwise
-	ldi r17, 0xD	;D
-	sbrs r18, 6				; check if inputbit is set, skip otherwise
-	ldi r17, 0xC	;C
-	sbrs r18, 5				; check if inputbit is set, skip otherwise
-	ldi r17, 0xB	;B
-	sbrs r18, 4				; check if inputbit is set, skip otherwise
-	ldi r17, 0xA	;A
-	cpi r17, 0xFF		;Compare to see if overwritten
-	brne END_READ
-END_READ:
-	ret		;return to line from where it was called
+	pop r16
+	ret
+
+
+/*
+DESCRIPTION: Transmits a string stored in memory terminated by a null character using the OUT_CHAR subroutine
+IN: Z
+OUT: NOTHING
+OVERWRITES: Z pointer as it increments
+*/
+OUT_STRING:
+	push r17
+OUT_STRING_LOOP:
+	lpm r17, Z+
+	cpi r17, END	;Compare with the null terminated value
+	breq END_STRING
+	rcall OUT_CHAR	;Passing in r17 to the out character fucntion
+	rjmp OUT_STRING_LOOP
+END_STRING:
+	pop r17
+	ret
+
+
+/*
+DESCRIPTION: Polls the USART's status to see if the receive has been completed
+IN: NONE
+OUT: r17 with DATA
+OVERWRITES: r17 (data passed)
+*/
+IN_CHAR:
+	push r16
+IN_CHAR_LOOP:
+	lds r16, USARTD0_STATUS
+	sbrs r16, 7;7 is set when the receiver has received some information
+	rjmp IN_CHAR_LOOP
+	lds r17, USARTD0_DATA	;Store the value that was received into the buffer
+	pop r16
+	ret

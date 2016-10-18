@@ -28,17 +28,9 @@
   <DELAY_10ms_LOOP><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\init.asm</FILE><LINE>71</LINE></DELAY_10ms_LOOP>
   <DELAY_X0ms><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\init.asm</FILE><LINE>83</LINE></DELAY_X0ms>
   <DELAY_X0ms_LOOP><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\init.asm</FILE><LINE>86</LINE></DELAY_X0ms_LOOP>
-  <MAIN><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>22</LINE></MAIN>
-  <USART_INIT><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>53</LINE></USART_INIT>
-  <DONE><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>26</LINE></DONE>
-  <OUT_CHAR><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>94</LINE></OUT_CHAR>
-  <DELAY_1000us><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>31</LINE></DELAY_1000us>
-  <DELAY_1000us_LOOP><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>38</LINE></DELAY_1000us_LOOP>
-  <OUT_CHAR_LOOP><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>96</LINE></OUT_CHAR_LOOP>
-  <OUT_STRING><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>114</LINE></OUT_STRING>
-  <OUT_STRING_LOOP><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>116</LINE></OUT_STRING_LOOP>
-  <END_STRING><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>122</LINE></END_STRING>
-  <IN_CHAR><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>133</LINE></IN_CHAR>
-  <IN_CHAR_LOOP><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>135</LINE></IN_CHAR_LOOP>
+  <ISR_LED_COUNT><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>59</LINE></ISR_LED_COUNT>
+  <MAIN><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>27</LINE></MAIN>
+  <INIT_EXT_INTR><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>40</LINE></INIT_EXT_INTR>
+  <DONE><FILE>C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm</FILE><LINE>37</LINE></DONE>
  </LABELS>
 </ASSEMBLER_INFO>
