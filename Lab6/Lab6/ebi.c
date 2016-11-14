@@ -1,19 +1,13 @@
-/*//////////////////////////////////////////////////////////////////////////////////
+/*
  * ebi.c
  *
  *  Author:  Robert Olsthoorn
- *  Purpose: To provide an example for the EBI in C. Program configures both CS0
- *           and CS1 to control two external address ranges.  The example also 
- *           shows how pointers	work for reading and writing to I/O.  Finally, the
- *           example shows how an inline Assembly command (include file) may be
- *           used to access memory locations using 3 bytes.
- *///////////////////////////////////////////////////////////////////////////////////
+ *  Purpose: To provide an example for the EBI in C. 
+ */
 
-//////////////////////////////////////INCLUDES///////////////////////////////////////
 #include <avr/io.h>
 #include "ebi_driver.h"
 
-//////////////////////////////////INITIALIZATIONS////////////////////////////////////
 #define F_CPU 2000000       // ATxmega runs at 2MHz on Reset.
 #define CS0_Start 0x288000
 #define CS0_End 0x289FFF
@@ -22,14 +16,7 @@
 #define LCD_START 0x395000
 #define LCD_END 0x396FFF
 
-/************************************************************************************
-* Name:     EBI_init
-* Purpose:  Function to initialize the desired EBI Ports.  Configures to run IO Port, 
-*           SRAM, and LCD.  All CSs and other control signals generate appropriate
-*           enables inside CPLD.
-* Inputs:
-* Output:
-************************************************************************************/
+//Initialize the EBI
 void EBI_init()
 {
 	EBI_3port_init();
