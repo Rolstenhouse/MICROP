@@ -121,7 +121,6 @@ int main(void)
 			DMA_CH0_SRCADDR0 = ((uint16_t)(&triangleWave[0]) >> 0) & 0xFF;	//Properly adjust src address
 			DMA_CH0_SRCADDR1 = ((uint16_t)(&triangleWave[0]) >> 8) & 0xFF;
 			DMA_CH0_SRCADDR2 = 0;
-			DACA_CTRLA = 0x05;	//enable DACA
 			TCC0_CCA = frequency;
 		}
 		else if (read == '#'){
@@ -129,7 +128,6 @@ int main(void)
 			DMA_CH0_SRCADDR0 = ((uint16_t)(&sineWave[0]) >> 0) & 0xFF;	//Properly adjust src address
 			DMA_CH0_SRCADDR1 = ((uint16_t)(&sineWave[0]) >> 8) & 0xFF;
 			DMA_CH0_SRCADDR2 = 0;
-			DACA_CTRLA = 0x05;	//enable DACA
 			TCC0_CCA = frequency;
 			
 		}
