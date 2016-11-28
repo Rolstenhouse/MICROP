@@ -264,10 +264,10 @@ Disassembly of section .text:
      2d0:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
 
 000002d4 <EBI_init>:
-*           enables inside CPLD.
-* Inputs:
-* Output:
-************************************************************************************/
+#define LCD_START 0x395000
+#define LCD_END 0x396FFF
+
+//Initialize the EBI
 void EBI_init()
 {
      2d4:	cf 93       	push	r28
@@ -1807,7 +1807,7 @@ int main(void)
      cac:	1c 82       	std	Y+4, r1	; 0x04
      cae:	38 c0       	rjmp	.+112    	; 0xd20 <main+0x396>
 						 //Decrease period that music is played at
-						 playNoteDurationSeparated(melody[i], beat[i]*.005);
+						 playNoteDurationSeparated(melody[i], beat[i]*.3);
      cb0:	8b 81       	ldd	r24, Y+3	; 0x03
      cb2:	9c 81       	ldd	r25, Y+4	; 0x04
      cb4:	88 0f       	add	r24, r24
@@ -1825,10 +1825,10 @@ int main(void)
      ccc:	91 81       	ldd	r25, Z+1	; 0x01
      cce:	a2 81       	ldd	r26, Z+2	; 0x02
      cd0:	b3 81       	ldd	r27, Z+3	; 0x03
-     cd2:	2a e0       	ldi	r18, 0x0A	; 10
-     cd4:	37 ed       	ldi	r19, 0xD7	; 215
-     cd6:	43 ea       	ldi	r20, 0xA3	; 163
-     cd8:	5b e3       	ldi	r21, 0x3B	; 59
+     cd2:	2a e9       	ldi	r18, 0x9A	; 154
+     cd4:	39 e9       	ldi	r19, 0x99	; 153
+     cd6:	49 e9       	ldi	r20, 0x99	; 153
+     cd8:	5e e3       	ldi	r21, 0x3E	; 62
      cda:	bc 01       	movw	r22, r24
      cdc:	cd 01       	movw	r24, r26
      cde:	0e 94 92 08 	call	0x1124	; 0x1124 <__mulsf3>
@@ -1890,7 +1890,7 @@ int main(void)
      d3a:	b7 cf       	rjmp	.-146    	; 0xcaa <main+0x320>
 					 for(int i=0; i<(sizeof melody / sizeof *melody); i++){
 						 //Decrease period that music is played at
-						 playNoteDurationSeparated(melody[i], beat[i]*.005);
+						 playNoteDurationSeparated(melody[i], beat[i]*.3);
 					 }
 				 }
 				break;

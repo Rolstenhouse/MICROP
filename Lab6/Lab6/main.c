@@ -155,7 +155,7 @@ int main(void)
 				 for(int j=0; j<3; j++){
 					 for(int i=0; i<(sizeof melody / sizeof *melody); i++){
 						 //Decrease period that music is played at
-						 playNoteDurationSeparated(melody[i], beat[i]*.005);
+						 playNoteDurationSeparated(melody[i], beat[i]*.3);
 					 }
 				 }
 				break;
