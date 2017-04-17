@@ -1,12 +1,12 @@
 
-AVRASM ver. 2.2.6  C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm Mon Oct 17 20:11:42 2016
+AVRASM ver. 2.2.6  C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm Tue Dec 06 09:30:20 2016
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.0.39\avrasm\inc\ATxmega128a1udef.inc'
-C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm(13): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.0.39\avrasm\inc\ATxmega128A1Udef.inc'
-C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm(16): Including file 'C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\init.asm'
+C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm(12): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.0.39\avrasm\inc\ATxmega128A1Udef.inc'
+C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm(15): Including file 'C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\init.asm'
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.0.39\avrasm\inc\ATxmega128a1udef.inc'
-C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm(13): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.0.39\avrasm\inc\ATxmega128A1Udef.inc'
-C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm(16): Including file 'C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\init.asm'
+C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm(12): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.0.39\avrasm\inc\ATxmega128A1Udef.inc'
+C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm(15): Including file 'C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\init.asm'
                                  
                                  /*
                                  
@@ -6708,14 +6708,13 @@ C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\mai
                                  
                                  
                                  
-                                 * Lab 4 Part A
+                                 * Lab 4 Part E
                                  * Name:			Robert Olsthoorn
                                  * Section #:	8705
                                  * TA Name:		Daniel
-                                 * Description:	Program registers PIN0 on portE as a trigger to watch for interrupts and when falling edge is detected
-                                 *				it increments a counter by 1 and sets it as on the LED port declared by the EBI
+                                 * Description:	This program executes the display of a menu by using the seial communication through USART to create an interactive console window.
                                  
-                                 * Lab4_ext_intr.asm
+                                 * Lab4_serial_menu.asm
                                  */
                                  
                                  .list	;Begin including in .lss file
@@ -6812,79 +6811,449 @@ C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\mai
 00010c f7e9                      	brne DELAY_X0ms_LOOP	; If not equal to 0, break out of value
                                  	
 00010d 912f                      	pop r18				; return r18 to original value
-00010e 9508                      
-                                 .org PORTE_INT0_vect
-000056 c1e0                      	rjmp ISR_LED_COUNT
+00010e 9508                       
+                                  .equ CR = 0x0D
+                                  .equ LF = 0x0A
+                                  .equ ESC = 0x1B
+                                  .equ END = 0x00
                                  
-                                 .def counter = r17
+                                  ;Storing table in memory
+                                  .org 0x300
+000300 6f52
+000301 6562
+000302 7472
+000303 7327
+000304 4620
+000305 7661
+000306 726f
+000307 7469
+000308 3a65
+000309 0a0d                      	MENU: .db	"Robert's Favorite:", CR, LF
+00030a 2e31
+00030b 2020
+00030c 2020
+00030d 4f20
+00030e 2f53
+00030f 6f43
+000310 706d
+000311 7475
+000312 7265
+000313 2820
+000314 614d
+000315 2063
+000316 726f
+000317 5020
+000318 2943
+000319 0a0d                      			.db	"1.     OS/Computer (Mac or PC)", CR, LF
+00031a 2e32
+00031b 2020
+00031c 2020
+00031d 4520
+00031e 2f45
+00031f 4543
+000320 4320
+000321 756f
+000322 7372
+000323 2065
+000324 0a0d                      			.db "2.     EE/CE Course ", CR, LF
+000325 2e33
+000326 2020
+000327 2020
+000328 4820
+000329 626f
+00032a 7962
+00032b 0a0d                      			.db	"3.     Hobby", CR, LF
+00032c 2e34
+00032d 2020
+00032e 2020
+00032f 5120
+000330 6f75
+000331 6574
+000332 0a0d                      			.db	"4.     Quote", CR, LF
+000333 2e35
+000334 2020
+000335 2020
+000336 4d20
+000337 766f
+000338 6569
+000339 0a0d                      			.db	"5.     Movie", CR, LF
+00033a 2e36
+00033b 2020
+00033c 2020
+00033d 5220
+00033e 2d65
+00033f 6964
+000340 7073
+000341 616c
+000342 2079
+000343 656d
+000344 756e
+000345 0a0d                      			.db	"6.     Re-display menu", CR, LF
+000346 5345
+000347 3a43
+000348 2020
+000349 6520
+00034a 6978
+00034b 0d74
+00034c 000a                      			.db	"ESC:   exit", CR, LF, END
+                                 
+00034d 6f52
+00034e 6562
+00034f 7472
+000350 6820
+000351 7361
+000352 6220
+000353 6565
+000354 206e
+000355 6f74
+000356 646c
+000357 6820
+000358 2765
+000359 2073
+00035a 6166
+00035b 6c6c
+00035c 6e65
+00035d 6920
+00035e 206e
+00035f 6f6c
+000360 6576
+000361 7720
+000362 7469
+000363 2068
+000364 6968
+000365 2073
+000366 614d
+000367 0d63
+000368 000a                      	Computer: .db	"Robert has been told he's fallen in love with his Mac", CR, LF, END
+000369 6f52
+00036a 6562
+00036b 7472
+00036c 6520
+00036d 6a6e
+00036e 796f
+00036f 6465
+000370 6420
+000371 6769
+000372 7469
+000373 6c61
+000374 6c20
+000375 676f
+000376 6369
+000377 4520
+000378 4c45
+000379 3733
+00037a 3130
+00037b 6120
+00037c 6c20
+00037d 746f
+00037e 0d20
+00037f 000a                      	Course:	.db		"Robert enjoyed digital logic EEL3701 a lot ", CR, LF, END
+000380 6f52
+000381 6562
+000382 7472
+000383 6820
+000384 7361
+000385 6220
+000386 6565
+000387 206e
+000388 6e6b
+000389 776f
+00038a 206e
+00038b 6f74
+00038c 6420
+00038d 6261
+00038e 6c62
+00038f 2065
+000390 6e69
+000391 7320
+000392 6c61
+000393 6173
+000394 6420
+000395 6e61
+000396 6963
+000397 676e
+000398 0d20
+000399 000a                      	Hobby: .db		"Robert has been known to dabble in salsa dancing ", CR, LF, END
+00039a 6f52
+00039b 6562
+00039c 7472
+00039d 6220
+00039e 6c65
+00039f 6569
+0003a0 6576
+0003a1 2073
+0003a2 5327
+0003a3 7274
+0003a4 6e65
+0003a5 7467
+0003a6 2068
+0003a7 6f64
+0003a8 7365
+0003a9 6e20
+0003aa 746f
+0003ab 6320
+0003ac 6d6f
+0003ad 2065
+0003ae 7266
+0003af 6d6f
+0003b0 7720
+0003b1 6e69
+0003b2 696e
+0003b3 676e
+0003b4 202e
+0003b5 6f59
+0003b6 7275
+0003b7 7320
+0003b8 7274
+0003b9 6775
+0003ba 6c67
+0003bb 7365
+0003bc 6420
+0003bd 7665
+0003be 6c65
+0003bf 706f
+0003c0 7920
+0003c1 756f
+0003c2 2072
+0003c3 7473
+0003c4 6572
+0003c5 676e
+0003c6 6874
+0003c7 2773
+0003c8 0d20
+0003c9 000a                      	Quote: .db		"Robert believes 'Strength does not come from winning. Your struggles develop your strengths' ", CR, LF, END
+0003ca 6f52
+0003cb 6562
+0003cc 7472
+0003cd 6620
+0003ce 756f
+0003cf 646e
+0003d0 7420
+0003d1 6568
+0003d2 6920
+0003d3 6564
+0003d4 2061
+0003d5 666f
+0003d6 6c20
+0003d7 6669
+0003d8 2065
+0003d9 6e6f
+0003da 4d20
+0003db 7261
+0003dc 2073
+0003dd 6166
+0003de 6373
+0003df 6e69
+0003e0 7461
+0003e1 6e69
+0003e2 2067
+0003e3 6977
+0003e4 6874
+0003e5 6820
+0003e6 7369
+0003e7 6620
+0003e8 7661
+0003e9 726f
+0003ea 7469
+0003eb 2065
+0003ec 6f6d
+0003ed 6976
+0003ee 2065
+0003ef 6f54
+0003f0 6174
+0003f1 206c
+0003f2 6552
+0003f3 6163
+0003f4 6c6c
+0003f5 0d20
+0003f6 000a                      	Movie: .db		"Robert found the idea of life on Mars fascinating with his favorite movie Total Recall ", CR, LF, END
+0003f7 6f44
+0003f8 656e
+0003f9 0d21
+0003fa 000a                      	Exit: .db		"Done!", CR, LF, END
+0003fb 0a0d
+C:\Users\rolstenhouse\Documents\Atmel Studio\7.0\Lab4_ext_intr\Lab4_ext_intr\main.asm(39): warning: .cseg .db misalignment - padding zero byte
+0003fc 0000                      	NewLine: .db	"", CR, LF, END
                                  
                                  .org 0x0000
-000000 c1ff                      rjmp MAIN
+000000 c3ff                      rjmp MAIN
                                  
-                                 .org 0x0200
+                                 .org 0x0400
                                  MAIN:
-000200 efef
-000201 bfed
-000202 e3ff
-000203 bffe                      	SET_STACK
-000204 e107
-000205 9300 06e1
-000207 e003
-000208 9300 06e5
-00020a ef0f
-00020b 9300 0701
-00020d ef0f
-00020e 9300 0721
-000210 e001
-000211 9300 0440
-000213 e0f4
-000214 e5e2
-000215 e800
-000216 9301
-000217 e208
-000218 8300
-000219 e105
-00021a 9300 0450
-00021c e208
-00021d 9300 0039
-00021f e8b0
-000220 e0a0                      	SET_EBI		;Using X as the pointer to the LEDs ;Also sets LEDs as outputs
+000400 efef
+000401 bfed
+000402 e3ff
+000403 bffe                      	SET_STACK
+000404 d02c                      	rcall USART_INIT
+000405 c01f                      	rjmp MENU_PRINT
                                  
-000221 e000                      	ldi r16, 0x00	;Clear existing bits
-000222 930c                      	st X, r16
+                                 /*
+                                 DESCRIPTION: State to filter based on read input
+                                 IN: NOTHING
+                                 OUT: NOTHING
+                                 OVERWRITES: r17, used for internal comparison
+                                 */
+                                 AWAIT_INPUT:
+000406 d057                      	rcall IN_CHAR
+000407 3311                      	cpi r17, '1'
+000408 f069                      	breq MENU1
+000409 3312                      	cpi r17, '2'
+00040a f071                      	breq MENU2
+00040b 3313                      	cpi r17, '3'
+00040c f079                      	breq MENU3
+00040d 3314                      	cpi r17, '4'
+00040e f081                      	breq MENU4
+00040f 3315                      	cpi r17, '5'
+000410 f089                      	breq MENU5
+000411 3316                      	cpi r17, '6'
+000412 f091                      	breq MENU_PRINT
+000413 311b                      	cpi r17, ESC
+000414 f099                      	breq DONE
+000415 cff0                      	rjmp AWAIT_INPUT
                                  
-000223 e010                      	ldi counter, 0
-000224 d001                      	rcall INIT_EXT_INTR	
+                                 MENU1:
+000416 e9ea                      	ldi ZL, low(Computer << 1)
+000417 e0f6                      	ldi ZH, high(Computer <<1)
+000418 c013                      	rjmp PRINT_TO_CONSOLE
+                                 
+                                 MENU2:
+000419 ede2                      	ldi ZL, low(Course << 1)
+00041a e0f6                      	ldi ZH, high(Course <<1)
+00041b c010                      	rjmp PRINT_TO_CONSOLE
+                                 
+                                 MENU3:
+00041c e0e0                      	ldi ZL, low(Hobby << 1)
+00041d e0f7                      	ldi ZH, high(Hobby <<1)
+00041e c00d                      	rjmp PRINT_TO_CONSOLE
+                                 
+                                 MENU4:
+00041f e3e4                      	ldi ZL, low(Quote << 1)
+000420 e0f7                      	ldi ZH, high(Quote <<1)
+000421 c00a                      	rjmp PRINT_TO_CONSOLE
+                                 
+                                 MENU5:
+000422 e9e4                      	ldi ZL, low(Movie << 1)
+000423 e0f7                      	ldi ZH, high(Movie <<1)
+000424 c007                      	rjmp PRINT_TO_CONSOLE
+                                 
+                                 MENU_PRINT:
+000425 e0e0                      	ldi ZL, low(MENU << 1)
+000426 e0f6                      	ldi ZH, high(MENU << 1)
+000427 c004                      	rjmp PRINT_TO_CONSOLE
                                  
                                  DONE:
-000225 cfff                      	rjmp DONE;
+000428 eeee                      	ldi ZL, low(Exit << 1)
+000429 e0f7                      	ldi ZH, high(Exit << 1)
+00042a d02b                      	rcall OUT_STRING
+                                 DONE_LOOP:
+00042b cfff                      	rjmp DONE_LOOP;
                                  
-                                 INIT_EXT_INTR:
-000226 930f                      	push r16
+                                 /*
+                                 DESCRIPTION: Handles the printing of the line as well as the newline character 
+                                 IN: Z
+                                 OUT: Prints to OUT_STRING console
+                                 OVERWRITES: Z pointer with newline information
+                                 */
+                                 PRINT_TO_CONSOLE:
+00042c d029                      	rcall OUT_STRING
+00042d efe6                      	ldi ZL, low(Newline << 1)
+00042e e0f7                      	ldi ZH, high(Newline << 1)
+00042f d026                      	rcall OUT_STRING
+000430 cfd5                      	rjmp AWAIT_INPUT
+                                 /*
+                                 DESCRIPTION: Initialiazes the user transmission protocol information and correctly sets all port directions
+                                 IN: NOTHING
+                                 OUT: NOTHING
+                                 OVERWRITES: PORTD_DIRSET, PORTQ_DIRSET, USARTD0_CTRLB, USARTD0_CTRLC, USARTD0_BAUDCTRLA, USARTD0_BAUDCTRLB
+                                 */
+                                 USART_INIT:
+000431 930f                      	push r16
+000432 e008                      	ldi r16, 0x08		;Setting bit 3 for TX as output
+000433 9300 0661                 	sts PORTD_DIRSET, r16
+000435 9300 0665                 	sts PORTD_OUTSET, r16	;Defaulting Tx output balue to be one
+000437 e004                      	ldi r16, 0x04		;Setting bit 2 as RX for input
+000438 9300 0662                 	sts PORTD_DIRCLR, r16
                                  
-000227 e001                      	ldi r16, 0x01		;Setting value as a low-level interrupt
-000228 9300 0689                 	sts PORTE_INTCTRL, r16
+                                 	;Initializing portQ bits as outputs (with appropriate values)
+00043a e00a                      	ldi r16, 0x0A	;Setting bits 3 and 1 as output
+00043b 9300 07c1                 	sts PORTQ_DIRSET, r16	;Declaring direction as output ;USB_SW_EN
+00043d 9300 07c6                 	sts PORTQ_OUTCLR, r16	;Setting default values on outputs to be lows	;USB_SW_SEL 
                                  
-00022a 9300 068a                 	sts PORTE_INT0MASK, r16 ;Setting pin0 for interrupt
+00043f e108                      	ldi r16, 0x18
+000440 9300 09a4                 	sts USARTD0_CTRLB, r16 ;Enabling Receiver Enable and transmitter enable
                                  
-00022c 9300 0682                 	sts PORTE_DIRCLR, r16	;Setting pin0 as default to go for input pin
-00022e e002                      	ldi r16, 0b00000010		; 00000 | 010 ;Setting 010 for sensing falling edge
-00022f 9300 0690                 	sts PORTE_PIN0CTRL, r16
-000231 e001                      	ldi r16, 0x01
-000232 9300 00a2                 	sts PMIC_CTRL, r16	;Seting PMIC as a low-level interrupt level
+                                 	;Writing the equivalent calcluations for baud rate
+                                 	;	BSEL = 0x121	; 289 in hex
+                                 	;	BSCALE = 0b1001 ;-7 since 2's complement
+                                 	
+                                 	;Lower 8 bits of BSEL
+000442 e201                      	ldi r16, 0x21
+000443 9300 09a6                 	sts USARTD0_BAUDCTRLA, r16
                                  
-000234 910f                      	pop r16
-000235 9478                      	sei		;Setting the global interrupt flag
+                                 	;BSCALE first 4 bits, BSEL lower 4 bits
+000445 e901                      	ldi r16, 0x91
+000446 9300 09a7                 	sts USARTD0_BAUDCTRLB, r16
+                                 		
+                                 	;Setting the USART for asynchonous mode
+000448 e203                      	ldi r16, 0b00100011	; 00 (asynchronous) | 10 (even parity) | 0 (stop bit) | 011 (8 bit data size)
+000449 9300 09a5                 	sts USARTD0_CTRLC, r16
                                  
-000236 9508                      	ret;
+00044b 910f                      	pop r16
+00044c 9508                      	ret
                                  
-                                 ISR_LED_COUNT:
-000237 940e 0100                 	call DELAY_10ms
-000239 940e 0100                 	call DELAY_10ms
-00023b 940e 0100                 	call DELAY_10ms
-00023d 9513                      	inc counter
-00023e 931c                      	st X, counter
+                                 /*
+                                 DESCRIPTION: Polls the USART's status to see if the transmission has been completed, and then transmits its own message
+                                 IN: r17
+                                 OUT: Loads USARTD0_DATA with r17
+                                 OVERWRITES: NOTHING
+                                 */
+                                 OUT_CHAR:
+00044d 930f                      	push r16
+                                 OUT_CHAR_LOOP:
                                  
+00044e 9100 09a1                 	lds r16, USARTD0_STATUS
+000450 ff05                      	sbrs r16, 5	;5 is set if ready to receive transmission information on the buffer
+000451 cffc                      	rjmp OUT_CHAR_LOOP
+                                 		
+000452 9310 09a0                 	sts USARTD0_DATA, r17
+                                 
+000454 910f                      	pop r16
+000455 9508                      	ret
+                                 
+                                 
+                                 /*
+                                 DESCRIPTION: Transmits a string stored in memory terminated by a null character using the OUT_CHAR subroutine
+                                 IN: Z
+                                 OUT: NOTHING
+                                 OVERWRITES: Z pointer as it increments
+                                 */
+                                 OUT_STRING:
+000456 931f                      	push r17
+                                 OUT_STRING_LOOP:
+000457 9115                      	lpm r17, Z+
+000458 3010                      	cpi r17, END	;Compare with the null terminated value
+000459 f011                      	breq END_STRING
+00045a dff2                      	rcall OUT_CHAR	;Passing in r17 to the out character fucntion
+00045b cffb                      	rjmp OUT_STRING_LOOP
+                                 END_STRING:
+00045c 911f                      	pop r17
+00045d 9508                      	ret
+                                 
+                                 
+                                 /*
+                                 DESCRIPTION: Polls the USART's status to see if the receive has been completed
+                                 IN: NONE
+                                 OUT: r17 with DATA
+                                 OVERWRITES: r17 (data passed)
+                                 */
+                                 IN_CHAR:
+00045e 930f                      	push r16
+                                 IN_CHAR_LOOP:
+00045f 9100 09a1                 	lds r16, USARTD0_STATUS
+000461 ff07                      	sbrs r16, 7;7 is set when the receiver has received some information
+000462 cffc                      	rjmp IN_CHAR_LOOP
+000463 9110 09a0                 	lds r17, USARTD0_DATA	;Store the value that was received into the buffer
+000465 910f                      	pop r16
 
 
 RESOURCE USE INFORMATION
@@ -6902,42 +7271,42 @@ counted separately from r26..r31 here.
 .dseg memory usage only counts static data declared with .byte
 
 "ATxmega128A1U" register use summary:
-x  :   2 y  :   0 z  :   2 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
+x  :   0 y  :   0 z  :   1 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:  30 r17:   3 r18:   3 r19:   0 r20:   0 
-r21:   0 r22:   0 r23:   0 r24:   0 r25:   0 r26:   1 r27:   1 r28:   0 
-r29:   0 r30:   7 r31:   7 
-Registers used: 9 out of 35 (25.7%)
+r13:   0 r14:   0 r15:   0 r16:  26 r17:  13 r18:   3 r19:   0 r20:   0 
+r21:   0 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
+r29:   0 r30:  14 r31:  14 
+Registers used: 6 out of 35 (17.1%)
 
 "ATxmega128A1U" instruction use summary:
 .lds  :   0 .sts  :   0 adc   :   0 add   :   0 adiw  :   0 and   :   0 
 andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
-brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   0 brhc  :   0 
+brcc  :   0 brcs  :   0 break :   0 breq  :   8 brge  :   0 brhc  :   0 
 brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
 brne  :   2 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
-brvs  :   0 bset  :   0 bst   :   0 call  :   3 cbi   :   0 cbr   :   0 
+brvs  :   0 bset  :   0 bst   :   0 call  :   0 cbi   :   0 cbr   :   0 
 clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   0 cls   :   0 
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 
-cpi   :   0 cpse  :   0 dec   :   0 des   :   0 eicall:   0 eijmp :   0 
+cpi   :   8 cpse  :   0 dec   :   0 des   :   0 eicall:   0 eijmp :   0 
 elpm  :   0 eor   :   0 fmul  :   0 fmuls :   0 fmulsu:   0 icall :   0 
-ijmp  :   0 in    :   0 inc   :   1 jmp   :   0 lac   :   0 las   :   0 
-lat   :   0 ld    :   0 ldd   :   0 ldi   :  22 lds   :   0 lpm   :   0 
+ijmp  :   0 in    :   0 inc   :   0 jmp   :   0 lac   :   0 las   :   0 
+lat   :   0 ld    :   0 ldd   :   0 ldi   :  27 lds   :   3 lpm   :   1 
 lsl   :   0 lsr   :   0 mov   :   0 movw  :   0 mul   :   0 muls  :   0 
 mulsu :   0 neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :   2 
-pop   :   4 push  :   4 rcall :   2 ret   :   3 reti  :   1 rjmp  :   3 
+pop   :   7 push  :   7 rcall :   7 ret   :   6 reti  :   0 rjmp  :  14 
 rol   :   0 ror   :   0 sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   0 
-sbis  :   0 sbiw  :   1 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 
-seh   :   0 sei   :   1 sen   :   0 ser   :   0 ses   :   0 set   :   0 
-sev   :   0 sez   :   0 sleep :   0 spm   :   0 st    :   4 std   :   0 
-sts   :  12 sub   :   0 subi  :   1 swap  :   0 tst   :   0 wdr   :   0 
+sbis  :   0 sbiw  :   1 sbr   :   0 sbrc  :   0 sbrs  :   2 sec   :   0 
+seh   :   0 sei   :   0 sen   :   0 ser   :   0 ses   :   0 set   :   0 
+sev   :   0 sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 
+sts   :  10 sub   :   0 subi  :   1 swap  :   0 tst   :   0 wdr   :   0 
 xch   :   0 
 Instructions used: 16 out of 121 (13.2%)
 
 "ATxmega128A1U" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000480    162      0    162  139264   0.1%
+[.cseg] 0x000000 0x0008ce    238    506    744  139264   0.5%
 [.dseg] 0x002000 0x002000      0      0      0    8192   0.0%
 [.eseg] 0x000000 0x000000      0      0      0    2048   0.0%
 
-Assembly complete, 0 errors, 0 warnings
+Assembly complete, 0 errors, 1 warnings
